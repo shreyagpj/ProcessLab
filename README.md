@@ -1,87 +1,50 @@
 # ProcessLab
 
-A **C++ terminal-based operating system kernel simulator** that models core OS concepts including **process management, CPU scheduling, demand paging, virtual memory, and thrashing detection** through an interactive shell.
+A **CLI-based operating system simulator** built in **C++** to demonstrate fundamental OS concepts such as **process management, Round Robin CPU scheduling, demand paging, virtual memory, and page fault handling**.
+
+The project simulates how an operating system kernel manages processes and memory through an interactive command-line interface.
 
 ---
 
 ## Overview
 
-ProcessLab simulates the core responsibilities of an operating system kernel. It manages processes using **Process Control Blocks (PCBs)**, schedules CPU execution using multiple scheduling algorithms, allocates memory through a paging-based model, handles page faults, monitors thrashing, and records system activity.
+ProcessLab is a simplified operating system simulator that models the interaction between a CPU scheduler, process manager, and memory manager.
 
-The simulator exposes these components through an interactive `os>` shell, allowing users to create and manage processes, inspect memory usage, switch scheduling algorithms, and observe how kernel subsystems interact in real time.
+Processes can be created dynamically through the CLI. Each process is automatically divided into pages, partially loaded into simulated RAM using demand paging, and executed using a **Round Robin scheduler**. Memory accesses that reference pages not currently in RAM generate page faults, which are handled by the simulator by loading the required pages into memory.
+
+All kernel events are recorded in a timestamped log file for later inspection.
 
 ---
 
 ## Features
 
-- Interactive `os>` shell with 9 built-in commands
-- CPU scheduling:
-  - First Come First Serve (FCFS)
-  - Shortest Job First (SJF)
-  - Round Robin (Quantum = 4)
-  - Priority Scheduling
-- Random scheduling algorithm selected during boot
-- Automatic scheduler switching when thrashing is detected
+- Interactive command-line (`os>`) interface
+- Dynamic process creation
+- Round Robin CPU scheduling (Quantum = 4)
 - Process Control Block (PCB) management
-- 100 KB simulated RAM (25 frames)
-- 200 KB simulated Virtual Memory (50 frames)
-- 4 KB page size
-- Demand paging (only 10% of a process initially loaded into RAM)
-- Page fault handling with frame replacement when RAM is full
-- Thrashing detection (page fault rate > 5%)
-- Timestamped boot log (`bootlog_<timestamp>.txt`)
-- RAM and Virtual Memory frame visualization
-- Five preloaded test processes (`tests.cpp`)
+- Automatic page generation for every process
+- Demand paging
+- Simulated RAM and Virtual Memory
+- Page fault handling
+- Frame allocation and replacement
+- RAM and Virtual Memory visualization
+- Timestamped execution logs
+- Five preloaded test processes for demonstration
 
 ---
 
-## Simulated Kernel Components
+## Operating System Concepts Implemented
 
-| Component          | Description                                                    |
-| ------------------ | -------------------------------------------------------------- |
-| Process Manager    | Creates, schedules, tracks, and terminates processes           |
-| CPU Scheduler      | FCFS, SJF, Round Robin, and Priority scheduling                |
-| Memory Manager     | Simulates RAM and Virtual Memory using paging                  |
-| Page Fault Handler | Loads missing pages and performs frame replacement             |
-| Thrashing Monitor  | Detects excessive page faults and switches scheduling strategy |
-| Logger             | Records kernel events and execution statistics                 |
-| Interactive Shell  | Provides a command-line interface to the simulator             |
-
----
-
-## Core OS Concepts
-
-| Concept                     | Implementation                                              |
-| --------------------------- | ----------------------------------------------------------- |
-| Process Control Block (PCB) | `pid`, `bt`, `at`, `ct`, `tat`, `wt`, `pf`, `state`         |
-| Turnaround Time             | `TAT = CT - AT`                                             |
-| Waiting Time                | `WT = TAT - BT`                                             |
-| Ready Queue                 | `std::deque<Process>`                                       |
-| PID Lookup                  | `std::map<int, int>`                                        |
-| CPU Scheduling              | FCFS, SJF, Round Robin, Priority                            |
-| Demand Paging               | Only 10% of pages loaded during process creation            |
-| Physical Memory             | 100 KB RAM (25 frames)                                      |
-| Virtual Memory              | 200 KB (50 frames)                                          |
-| Page Size                   | 4 KB                                                        |
-| Page Fault Handler          | Loads missing pages into RAM and evicts frames if necessary |
-| Thrashing Detection         | Page fault rate > 5% triggers scheduler adaptation          |
-
----
-
-## Shell Commands
-
-```text
-help        Show all available commands
-create      Create a new process
-ps          Display the process table
-kill        Terminate a process by PID
-mem         Display RAM usage and frame allocation
-vm          Display Virtual Memory usage and frame allocation
-logs        Display the current boot log
-scheduler   View or change the scheduling algorithm
-stats       Display system statistics
-exit        Shut down ProcessLab
-```
+| Concept | Description |
+|---------|-------------|
+| Process Control Block (PCB) | Stores process information such as PID, burst time, state, turnaround time, waiting time, and page faults |
+| Round Robin Scheduling | Executes processes using a fixed time quantum |
+| Ready Queue | Stores runnable processes using `std::deque` |
+| Demand Paging | Initially loads only part of a process into RAM |
+| Paging | Processes are automatically divided into fixed-size pages |
+| Virtual Memory | Simulated backing store for pages not currently in RAM |
+| Page Fault Handling | Loads missing pages into RAM when referenced |
+| Memory Management | Allocates and manages physical and virtual memory |
 
 ---
 
@@ -90,73 +53,61 @@ exit        Shut down ProcessLab
 ### Physical Memory
 
 - Total RAM: **100 KB**
-- Frame Count: **25**
+- 25 Frames
 - Frame Size: **4 KB**
 
 ### Virtual Memory
 
 - Total Size: **200 KB**
-- Frame Count: **50**
+- 50 Frames
 - Frame Size: **4 KB**
 
 ### Demand Paging
 
-When a process is created, only **10%** of its pages are initially loaded into RAM.
+When a process is created:
 
-Remaining pages are loaded on demand whenever the process accesses memory that is not currently resident in physical memory.
-
-If RAM is full, the memory manager performs frame replacement before loading the requested page.
-
----
-
-## Thrashing Detection
-
-ProcessLab continuously monitors the page fault rate.
-
-If the overall fault rate exceeds **5%**, the simulator considers the system to be thrashing and automatically switches to another scheduling algorithm to improve system performance.
-
-Every scheduler switch is recorded in the system log.
+- The process is automatically divided into pages.
+- Only a portion of its pages are initially loaded into RAM.
+- Remaining pages stay in virtual memory until accessed.
+- Missing pages trigger page faults and are loaded on demand.
 
 ---
 
-## Log File
+## Shell Commands
 
-Every execution generates a timestamped log file:
+```text
+help        Show available commands
+create      Create a new process
+ps          Display the process table
+kill        Terminate a process by PID
+mem         Display RAM usage and frame allocation
+vm          Display Virtual Memory usage
+logs        Display the execution log
+stats       Display system statistics
+exit        Shut down ProcessLab
+```
+
+---
+
+## Logging
+
+Every execution creates a timestamped log file:
 
 ```text
 bootlog_<timestamp>.txt
 ```
 
-The log contains:
+The log records:
 
-- Boot events and memory initialization
-- Process creation and termination
-- Scheduling decisions
-- Page faults and frame evictions
-- Thrashing detection events
-- Scheduler switches
-- Per-process statistics
-- Final execution summary
-
----
-
-## Build & Run
-
-### Windows (CMake)
-
-```powershell
-mkdir build
-cd build
-cmake ..
-cmake --build .
-.\Debug\ProcessLab.exe
-```
-
-### Linux / macOS
-
-```bash
-make run
-```
+- System boot
+- Process creation
+- Process execution
+- Process completion
+- Memory allocation
+- Page faults
+- Frame replacements
+- System shutdown
+- Final process statistics
 
 ---
 
@@ -167,13 +118,13 @@ ProcessLab/
 ├── CMakeLists.txt
 ├── Makefile
 └── src/
-    ├── main.cpp          // Entry point
-    ├── Process.h         // PCB definition
-    ├── Memory.h/.cpp     // Paging, RAM, Virtual Memory
-    ├── Scheduler.h/.cpp  // Scheduling algorithms
-    ├── Logger.h          // Event logging
-    ├── OS.h/.cpp         // Kernel controller + shell
-    └── tests.h/.cpp      // Preloaded test processes
+    ├── main.cpp
+    ├── OS.h/.cpp
+    ├── Scheduler.h/.cpp
+    ├── Memory.h/.cpp
+    ├── Process.h
+    ├── Logger.h
+    └── tests.h/.cpp
 ```
 
 ---
@@ -181,41 +132,40 @@ ProcessLab/
 ## Technologies
 
 - C++17
+- Object-Oriented Programming (OOP)
 - Standard Template Library (STL)
 - `std::deque`
 - `std::vector`
 - `std::map`
 - `std::fstream`
+- Header/source file modular architecture
 - CMake
 - Make
 
-No external libraries or dependencies are required.
+No external libraries are used.
 
 ---
 
-## Why ProcessLab?
+## Learning Objectives
 
-ProcessLab was built to better understand how an operating system kernel coordinates multiple subsystems.
+ProcessLab was built to better understand how operating systems manage processes and memory internally.
 
-The simulator demonstrates:
+The project demonstrates:
 
-- Process lifecycle management
-- CPU scheduling
+- Process scheduling using Round Robin
 - Process Control Blocks (PCBs)
+- Paging and virtual memory
 - Demand paging
-- Virtual memory management
 - Page fault handling
 - Memory allocation
-- Thrashing detection and recovery
-- Kernel event logging
-- Interactive shell design
-
-Although simplified, the simulator models the interaction between these kernel components using concepts commonly taught in undergraduate operating systems courses.
+- CLI application design
+- Object-oriented software design
+- Modular C++ development using header and source files
 
 ---
 
-## Status
+## Project Goals
 
-ProcessLab is an educational operating system simulator built for learning and experimentation. It is **not** a real operating system kernel and does not execute real processes or interact with hardware.
+ProcessLab was developed to explore the core responsibilities of an operating system kernel through simulation. It provides a hands-on implementation of concepts commonly taught in operating systems courses, including process scheduling, paging, virtual memory, and memory management.
 
-Instead, it provides a conceptual simulation of kernel behavior, making it easier to visualize how operating systems schedule processes, manage memory, handle page faults, and respond to memory pressure.
+The project emphasizes clean C++ design using object-oriented programming, modular header/source organization, and standard data structures while providing an interactive CLI for experimenting with OS behavior.
