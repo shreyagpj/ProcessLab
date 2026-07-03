@@ -126,7 +126,56 @@ ProcessLab/
     ├── Logger.h
     └── tests.h/.cpp
 ```
+---
+## Build & Run
 
+### Prerequisites
+
+- C++17 compatible compiler
+- CMake 3.15+ (recommended)
+- GNU Make (Linux/macOS)
+
+### Clone the repository - Step 1
+
+```bash
+git clone https://github.com/<your-username>/ProcessLab.git
+cd ProcessLab
+```
+or download the zip file.
+
+### Windows (CMake) - Step 2
+
+```powershell
+mkdir build
+cd build
+cmake ..
+cmake --build .
+.\Debug\ProcessLab.exe
+```
+
+
+### Linux / macOS - Step 2
+
+```bash
+mkdir build
+cd build
+cmake ..
+make
+./ProcessLab
+```
+
+Alternatively, if using the provided Makefile:
+
+```bash
+make run
+```
+
+### Without CMake - Step 2
+
+```powershell
+g++ -std=c++17 src/*.cpp -o ProcessLab
+./ProcessLab
+```
 ---
 
 ## Technologies
